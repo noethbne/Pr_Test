@@ -6,9 +6,9 @@ public class Server {
     public static void main(String[] args) {
         try {
             System.setProperty("java.rmi.server.hostname", "127.0.0.1");
-            ProductImpl product = new ProductImpl("Name", "Beschreibung", 187);
+            ProductImpl p = new ProductImpl("Name", "Beschreibung", 187);
 
-            Product stub = (Product) UnicastRemoteObject.exportObject(product,0);
+            Product stub = (Product) UnicastRemoteObject.exportObject(p,0);
 
             Registry registry = LocateRegistry.getRegistry("127.0.0.1", 9100);
 
