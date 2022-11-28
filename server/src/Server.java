@@ -1,25 +1,33 @@
-import java.rmi.Remote;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class Server {
-    public static void main(String[] args){
+public class Server extends UnicastRemoteObject{
+    String user, password, roll;
+    int userId;
+
+    protected Server() throws RemoteException {
+        super(0);
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("Server started");
+
         try{
-            System.setProperty("java.rmi.server.hostname", "127.0.0.1");
-
-            ProductImpl testProduct = new ProductImpl("Test", "Desc Test", 123.5);
-
-            Product stub = (Product) UnicastRemoteObject.exportObject(testProduct, 0);
-
-            Registry registry = LocateRegistry.createRegistry(9100);
-
-            registry.rebind("test", testProduct);
-
-            System.out.println("Binding complete");
-
-        }catch (Exception e){
-            System.out.println("Server-Error: " + e);
+            LocateRegistry.createRegistry(1099);
+            System.out.println("Java rmi registry created");
+        }catch (RemoteException e){
+            System.out.println("RMI registry already exists");
         }
+
+        Server server = new Server();
+        User test = new UserImpl("Herbet", "");
+
+        Naming.rebind("//localhost/Server", server);
+        Naming.rebind("//localhost/Server/User", test);
+        System.out.println("Server bound in registry");
+
     }
 }
+
