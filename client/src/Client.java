@@ -6,17 +6,17 @@ import java.rmi.Naming;
 public class Client{
     public static void main(String[] args){
         try{
-            User test = (User) Naming.lookup("//localhost/Server/User");
-            test.setUser(enterUser());
-            test.setPassword(enterPassword());
-            System.out.println(test.getUser() + test.getPassword());
-            test.testLogin();
+            Login loginObj = (Login) Naming.lookup("//localhost/Server/LoginObj");
+            User user = loginObj.login(enterUserName(),enterPassword());
+            System.out.println(user.getAdmin());
+
+
         }catch(Exception e){
             System.out.println("Clientside Error: " + e);
         }
     }
 
-    public static String enterUser() throws IOException {
+    public static String enterUserName() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Enter Username:");
         return br.readLine();

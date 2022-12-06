@@ -1,44 +1,83 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class UserImpl extends UnicastRemoteObject implements User{
+    SQLDatabaseConnection dbConn;
     int userId;
-    String user;
+    String userName;
     String password;
-    String roll;
+    int admin;
+    int sessionId; //sessionId == seed :)
+
+    HashMap<Integer, String> seeds = new HashMap<>();
 
 
     public int getUserId() throws RemoteException {
         return this.userId;
     }
-    public String getUser() throws RemoteException{
-        return this.user;
+    public String getUserName() throws RemoteException{
+        return this.userName;
     }
     public String getPassword() throws RemoteException{
         return this.password;
     }
-    public String getRoll() throws RemoteException{
-        return this.roll;
+    public int getAdmin() throws RemoteException{
+        return this.admin;
     }
-    public void setUser(String newUser) throws RemoteException{
-        this.user = newUser;
+    public int setUserName(String newUserName) throws RemoteException{
+        this.userName = newUserName;
+        return 0;
     }
-    public void setPassword(String newPassword) throws RemoteException{
+    public int setPassword(String newPassword) throws RemoteException{
         this.password = newPassword;
+        return 0;
     }
 
-    public void testLogin() throws RemoteException{
-        System.out.println("Test");
-        SQLDatabaseConnection.login(getUser(), getPassword());
+    public int getSessionId() throws RemoteException{
+        return this.sessionId;
     }
-    UserImpl(int newUserId, String newUser, String newPassword,String newRoll) throws RemoteException{
+    public ArrayList<Course> getCourses() throws RemoteException, SQLException {
+        ArrayList<Course> courses = new ArrayList<>();
+        ResultSet rs = dbConn.getDBCourses();
+        while (rs.next()){
+            if(rs.getInt("deleted") == 1){
+                continue;
+            }
+            int courseId = rs.getInt("courseId");
+            int isPublic = rs.getInt("isPublic");
+            int courseOwner = rs.getInt("userId");
+            String courseName = rs.getString("name");
+            String courseDesc = rs.getString("description");
+
+            Course course = new CourseImpl(courseId, isPublic, courseOwner, courseName, courseDesc);
+            courses.add(course);
+        }
+        return courses;
+    }
+
+
+    //Returns the Seed if successfull.
+    private int generateSeed(String userName){
+        int x;
+        while (true) {
+            x = (int) (Math.random() * 500000);
+            if (!seeds.containsKey(x)) {
+                seeds.put(x, userName);
+                break;
+            }
+        }
+        return x;
+    }
+
+    UserImpl(int newUserId, String newUserName, int newAdmin) throws RemoteException{
+        dbConn = new SQLDatabaseConnection("","","");
         this.userId = newUserId;
-        this.user = newUser;
-        this.password = newPassword;
-        this.roll = newRoll;
-    }
-    UserImpl(String newUser, String newPassword) throws RemoteException{
-        this.user = newUser;
-        this.password = newPassword;
+        this.userName = newUserName;
+        this.admin = newAdmin;
+        this.sessionId = generateSeed(userName);
     }
 }

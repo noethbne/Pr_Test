@@ -22,10 +22,10 @@ public class Server extends UnicastRemoteObject{
         }
 
         Server server = new Server();
-        User test = new UserImpl("Herbet", "");
+        Login loginObj = new LoginImpl();
 
         Naming.rebind("//localhost/Server", server);
-        Naming.rebind("//localhost/Server/User", test);
+        Naming.rebind("//localhost/Server/LoginObj", loginObj);
         System.out.println("Server bound in registry");
 
     }

@@ -1,33 +1,87 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.mysql.cj.jdbc.result.ResultSetImpl;
+import com.mysql.cj.protocol.Resultset;
+
 import java.sql.*;
 
 public class SQLDatabaseConnection{
+    Connection conn;
+    Statement stmt;
 
-    public static void login(String user, String passwd){
-        String url = "jdbc:mysql://localhost:3306/javafxfitness";
-        String username = "root";
-        String password = "";
+    public boolean login(String user, String passwd){
+        boolean login = false;
+        String query = "Select * From euser where userName = '" + user + "'";
+        try {
+            ResultSet rs = stmt.executeQuery(query);
+            System.out.println(rs.next());
 
-        try(Connection conn = DriverManager.getConnection(url, username, password);Statement stmt = conn.createStatement();){
+            String dbPassword = rs.getString("password");
+            if (!dbPassword.equals(passwd)) {
+                System.out.println("Username or Password wrong. Please try again");
+
+            } else {
+                String sqlUsername = rs.getString("userName");
+                if (rs.getInt("deleted") == 1) {
+                    System.out.println("User " + sqlUsername + " is deleted!!!");
+
+                } else {
+                    login = true;
+                }
+            }
+        }catch (SQLException e){
+            System.err.println("Query Login failed");
+        }
+        return login;
+    }
+
+    public SQLDatabaseConnection(String dbUrl, String dbUsername, String dbPassword){
+        dbUrl = "jdbc:mysql://localhost:3306/javafxfitness";
+        dbUsername = "root";
+        dbPassword = "";
+
+        try{
+            conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+            stmt = conn.createStatement();
             System.out.println("Connection successful");
+        }catch (SQLException e){
+            System.out.println("Connection not successful");
+        }
+    }
 
-            String query = "Select * From test where user = '" + user + "'";
+    public int getUserId(String userName){
+        String query = "Select userId from euser where userName = '" + userName + "'";
+        try{
             ResultSet rs = stmt.executeQuery(query);
             rs.next();
 
-            String dbPassword = rs.getString("password");
-            if(!dbPassword.equals(passwd)){
-                System.out.println("Username or Password wrong. Please try again");
-
-            }else{
-                System.out.println("Login successfully");
-                System.out.println("Roll: " + rs.getString("roll"));
-            }
-
+            return rs.getInt("userId");
         }catch (SQLException e){
-            System.out.println("Username or Password wrong. Please try again");
+            System.err.println("Query for userId failed");
         }
+        return -69;
     }
+
+    public int isAdmin(String userName){
+        String query = "Select admin from euser where userName = '" + userName + "'";
+        try{
+            ResultSet rs = stmt.executeQuery(query);
+            rs.next();
+
+            return rs.getInt("admin");
+        }catch (SQLException e){
+            System.err.println("Query for admin failed");
+        }
+        return -69;
+    }
+
+    public ResultSet getDBCourses(){
+        String query = "Select * from ecourse";
+        try{
+            return stmt.executeQuery(query);
+        }catch (SQLException e) {
+            System.err.println("Query for Courses failed");
+        }
+        return null;
+    }
+
+
 }
